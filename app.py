@@ -15,4 +15,4 @@ def index():
 from view.view_member import *
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 
