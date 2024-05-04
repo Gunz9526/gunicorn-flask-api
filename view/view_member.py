@@ -13,6 +13,10 @@ count = 1
 memberModel = viewNS.model('회원정보', {
     'user_num': fields.Integer(description='유저 고유 번호', required=True, example="3")
 })
+authModel = viewNS.model('인증', {
+    'id': fields.String(description='아이디', required=True, example="test"),
+    'password': fields.String(description='비밀번호', required=True, example="test")
+})
 @viewNS.route('/member')
 class Member(Resource):
     @viewNS.expect(memberModel)
@@ -25,7 +29,8 @@ class Member(Resource):
     def delete(self):
         """회원 탈퇴"""
         userNum = request.form['user_num']
-        MemberController.discard_info(userNum)
+        userToken = request.form['user_token']
+        MemberController.discard_info(userNum, userToken)
         return { 'user_num' : userNum, 'result' : 'success' }
 
     @viewNS.expect(viewNS.model('회원 가입', {'array': fields.String(description='Dict 형식의 정보 추가 항목 배열')}))
@@ -48,34 +53,26 @@ class Member(Resource):
         MemberController.edit_info(userNum, array)
         return { 'user_num' : userNum, 'data' : array }
 
+
 @viewNS.route('/auth')
 class Auth(Resource):
+    # def get(self):              
+    #     """회원 정보 조회"""
+    #     array = request.form['info_array']
+    #     test = MemberController.join_memeber(array)
+    #     print(test)
+    #     return { 'test' : test }
 
-    # def login(self):
-    #     """로그인"""
-    #     userID = request.form['id']
-    #     password = request.form['password']
-    #     result = MemberController.login(userID, password)
-    #     if result == False:
-    #         return { 'result' : 'failed', 'reason' : 'mismatched member info '}
-    #     else:
-    #         return {'result' : 'success'}
-
-    def get(self):
-        test = MemberController.join_memeber()
-        print(test)
-        return { 'test' : test }
-        # return test
-
-    def post(self):
-        pass
-
+    @viewNS.expect(authModel)
     def patch(self):
-        pass
-
-    def delete(self):
-        pass
-
+        """로그인"""
+        userID = request.json.get['id']
+        password = request.json.get['password']
+        result = MemberController.login(userID, password)
+        if result == False:
+            return { 'result' : 'failed', 'reason' : 'mismatched member info '}
+        else:
+            return {'result' : 'success', 'value' : result['access_token']}
 
     # @app.route('/join')
     # def join():

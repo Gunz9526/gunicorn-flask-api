@@ -27,8 +27,12 @@ class MemberModel:
         
         return jsonify(access_token=access_token, refresh_token=refresh_token)
     
+    def check_tokens(token):
+        pass
+    
     def reissueToken(accessToken, refreshToken):
         pass
+
 
     def get_member_info():
         pass
@@ -37,16 +41,10 @@ class MemberModel:
         hashed_password = bcrypt.hashpw(password=password, salt=bcrypt.gensalt())
         cursor.excute(f"SELECT * FROM member WHERE id={userID} and pw={hashed_password}")
         check_data = cursor.fetchall()
-        if check_data != Null:
-            return check_data
-        else:
-            return False
+        return check_data
 
-    def check_tokens(token):
-        pass
-
-    def find_password(input_password):
-        pass
+    # def find_password(input_password):
+    #     pass
 
     def join_members(array): 
         if array == Null or array == None:

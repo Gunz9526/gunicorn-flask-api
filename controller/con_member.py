@@ -6,6 +6,8 @@ class Member:
     def __init__(self):
         pass
 
+    def convert_data(array):
+        pass
 
     def login(userID, password):
         if MemberModel.check_login(userID, password):
@@ -20,7 +22,7 @@ class Member:
         pass
 
     def join_memeber(array):
-        return MemberModel.join_members()
+        return MemberModel.join_members(array)
 
     def find_password():
         pass
