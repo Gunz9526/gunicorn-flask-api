@@ -1,4 +1,8 @@
+from app import db
 from flask import Flask
+from model.model_member import MemberModel
+
+
 
 from model.model_member import MemberModel
 
@@ -9,11 +13,9 @@ class Member:
     def convert_data(array):
         pass
 
-    def login(userID, password):
-        if MemberModel.check_login(userID, password):
-            return MemberModel.createToken(userID)
-        else:
-            return False
+    def login(self, userID, password):
+        result = db.session.execute(self.db.select(MemberModel).filter_by(id = userID, pw = password).first())
+        return result
     
     def test(self):
         pass

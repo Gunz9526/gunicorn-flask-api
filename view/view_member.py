@@ -22,14 +22,14 @@ class Member(Resource):
     @viewNS.expect(memberModel)
     def get(self):
         """회원 정보 조회"""
-        userNum = request.form['user_num']
+        userNum = request.json.get['user_num']
         MemberController.show_member_info(userNum)
     
     @viewNS.expect(memberModel)
     def delete(self):
         """회원 탈퇴"""
-        userNum = request.form['user_num']
-        userToken = request.form['user_token']
+        userNum = request.json.get['user_num']
+        userToken = request.json.get['user_token']
         MemberController.discard_info(userNum, userToken)
         return { 'user_num' : userNum, 'result' : 'success' }
 
@@ -37,7 +37,7 @@ class Member(Resource):
     def post(self):
         """회원가입"""
         global count
-        array = request.form['array']
+        array = request.json.get['array']
         array.to_dict()
 
         MemberController.join_memeber(array)
@@ -47,8 +47,8 @@ class Member(Resource):
     @viewNS.expect(viewNS.inherit('회원 정보 수정', memberModel, { 'array': fields.String(description='Dict 형식의 정보 수정 항목 배열')}))
     def patch(self):
         """회원 정보 수정"""
-        userNum = request.form['user_num']
-        array = request.form['array']
+        userNum = request.json.get['user_num']
+        array = request.json.get['array']
         array.to_dict() 
         MemberController.edit_info(userNum, array)
         return { 'user_num' : userNum, 'data' : array }
@@ -66,13 +66,12 @@ class Auth(Resource):
     @viewNS.expect(authModel)
     def patch(self):
         """로그인"""
-        userID = request.json.get['id']
-        password = request.json.get['password']
-        result = MemberController.login(userID, password)
-        if result == False:
-            return { 'result' : 'failed', 'reason' : 'mismatched member info '}
+        user_array = request.get_json()
+        result = MemberController.login(user_array['id'], user_array['password'])
+        if result == None:
+            return { 'result' : 'failed', 'reason' : 'mismatched member info ' }
         else:
-            return {'result' : 'success', 'value' : result['access_token']}
+            return { 'result' : 'success', 'value' : "result['access_token']" }
 
     # @app.route('/join')
     # def join():
