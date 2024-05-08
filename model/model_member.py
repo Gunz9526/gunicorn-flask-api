@@ -14,18 +14,11 @@ class MemberModel(db.Model):
     id: Mapped[str] = mapped_column(String(20))
     pw: Mapped[str] = mapped_column(String(200))
     email: Mapped[str] = mapped_column(String(200),nullable=False)
-    permit: Mapped[int] = mapped_column(int, nullable=False, default=0)
-    create_at: Mapped[int] = mapped_column(int, nullable=False, default=time.time())
-    update_at: Mapped[int] = mapped_column(int, nullable=True)
+    permit: Mapped[int] = mapped_column(nullable=False, default=0)
+    create_at: Mapped[int] = mapped_column(nullable=False, default=time.time())
+    update_at: Mapped[int] = mapped_column(nullable=True)
 
     
-    # user_num = db.Column(db.Integer, primary_key=True)
-    # id = db.Column(db.string(20), nullable=False)
-    # pw = db.Column(db.string(200), nullable=False)
-    # email = db.Column(db.string(150), nullable=False)
-    # permit = db.Column(db.int, nullable=False, default=0)
-    # create_at = db.Column(db.int, nullable=False, default=time.time())
-    # update_at = db.Column(db.int, nullable=True)
 
 # class MemberModel():
 #     def __init__(self):

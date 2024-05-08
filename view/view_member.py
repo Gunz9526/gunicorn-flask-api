@@ -13,6 +13,23 @@ count = 1
 memberModel = viewNS.model('회원정보', {
     'user_num': fields.Integer(description='유저 고유 번호', required=True, example="3")
 })
+
+memeber_info_nested = viewNS.model(
+    "array_nested",
+    {
+        'id': fields.String(required=True, description='ID', default='test'),
+        'pw': fields.String(required=True, description='Password', default='test'),
+        'email': fields.String(required=True, description='Email', default='test@test.com'),
+    },
+)
+
+member_info = viewNS.model(
+    "array",
+    {
+        "array": fields.Nested(memeber_info_nested),
+    },
+)
+
 authModel = viewNS.model('인증', {
     'id': fields.String(description='아이디', required=True, example="test"),
     'password': fields.String(description='비밀번호', required=True, example="test")
@@ -22,34 +39,34 @@ class Member(Resource):
     @viewNS.expect(memberModel)
     def get(self):
         """회원 정보 조회"""
-        userNum = request.json.get['user_num']
+        userNum = request.get['user_num'].json()
         MemberController.show_member_info(userNum)
     
     @viewNS.expect(memberModel)
     def delete(self):
         """회원 탈퇴"""
-        userNum = request.json.get['user_num']
-        userToken = request.json.get['user_token']
+        userNum = request.get['user_num'].json()
+        userToken = request.get['user_token'].json()
         MemberController.discard_info(userNum, userToken)
         return { 'user_num' : userNum, 'result' : 'success' }
 
-    @viewNS.expect(viewNS.model('회원 가입', {'array': fields.String(description='Dict 형식의 정보 추가 항목 배열')}))
+    @viewNS.expect(viewNS.model('회원 가입', member_info))
     def post(self):
         """회원가입"""
-        global count
-        array = request.json.get['array']
-        array.to_dict()
+        array = request.json['array']
+        print(array)
+        member_con_object = MemberController()
+        MemberController.join_memeber(member_con_object, array)
+        return { 'id' : array['id'] , 'pw' : array }
 
-        MemberController.join_memeber(array)
-        count += 1
-        return { 'user_num' : count , 'data' : array }
-
-    @viewNS.expect(viewNS.inherit('회원 정보 수정', memberModel, { 'array': fields.String(description='Dict 형식의 정보 수정 항목 배열')}))
+    @viewNS.expect(viewNS.inherit('회원 정보 수정', memberModel, {'array': fields.String(description='Json 형식의 정보 추가 항목 배열')}))
     def patch(self):
         """회원 정보 수정"""
-        userNum = request.json.get['user_num']
-        array = request.json.get['array']
-        array.to_dict() 
+        userNum = request.json['user_num']
+        # print(type(request.json))
+        # print(userNum)
+
+        array = request.json['array']
         MemberController.edit_info(userNum, array)
         return { 'user_num' : userNum, 'data' : array }
 
@@ -66,12 +83,30 @@ class Auth(Resource):
     @viewNS.expect(authModel)
     def patch(self):
         """로그인"""
-        user_array = request.get_json()
-        result = MemberController.login(user_array['id'], user_array['password'])
+        user_id = request.json['id']
+        password = request.json['password']
+        
+
+        ##########
+        # @staticmethod 추가
+        # result = MemberController.login(user_array['id'], user_array['password'])
+
+        # # vsy
+        
+        # memObj = MemberController()
+        # result = MemberController.login(memObj ,user_array['id'], user_array['password'])
+
+        # # vs
+
+        Memberobj = MemberController()
+        result = Memberobj.login(user_id, password)
+
+        ##########
+        #print(result)
         if result == None:
             return { 'result' : 'failed', 'reason' : 'mismatched member info ' }
         else:
-            return { 'result' : 'success', 'value' : "result['access_token']" }
+            return { 'result' : 'success', 'access_token' : result['access_token'], 'refresh_token' : result['refresh_token'] }
 
     # @app.route('/join')
     # def join():
