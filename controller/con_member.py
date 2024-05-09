@@ -17,12 +17,18 @@ class Member:
         return (access_token, refresh_token)
 
     def login(self, userID, password):
-        hashed_password = mybcrypt.generate_password_hash(password).decode('utf-8')
-        result = db.session.execute(db.select(MemberModel).filter_by(id = userID, pw = hashed_password)).first()
+        # print(password, hashed_password)
+        result = db.session.execute(db.select(MemberModel).filter_by(id=userID)).scalars().first()
         if result != None:
-            return self.createToken(userID)
+            verify = mybcrypt.check_password_hash(result.pw, password)
+            if verify == True:
+                return self.createToken(userID)
+            else:
+                result = None
+                return result
         else:
             return result
+        
     
     def join_memeber(self, array):
         hashed_password = mybcrypt.generate_password_hash(array['pw']).decode('utf-8')
@@ -30,13 +36,28 @@ class Member:
         db.session.add(info)
         db.session.commit()
 
-    def find_password():
-        pass
+    def find_password(self, userID, email, password):        
+        result = db.session.execute(db.select(MemberModel).filter_by(id=userID, email=email)).scalars().first()
+        if result != None:
+            hashed_password = mybcrypt.generate_password_hash(password).decode('utf-8')
+            result.pw = hashed_password
+            db.session.commit()
+            return 'True'
+        else:
+            return 'False'
 
-    def edit_info(userNum, array):
-        # modified_info = MemberModel()
-        # db.session.execute(db.)
-        pass
 
-    def discard_info(userNum):
-        pass
+
+    def edit_info(self, userNum, password, email):
+        hashed_password = mybcrypt.generate_password_hash(password).decode('utf-8')
+        
+        result = db.session.execute(db.select(MemberModel).filter_by(user_num=userNum)).first()
+        result.pw = hashed_password
+        result.email = email
+        result.verified = True
+        db.session.commit()
+
+    def discard_info(self, userNum):
+        discard = db.session.execute(db.select(MemberModel).filter_by(user_num=userNum)).scalars().first()
+        db.session.delete(discard)
+        db.session.commit()

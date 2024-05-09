@@ -9,9 +9,8 @@ viewNS = Namespace(
     description='각 기능의 엔드포인트',
     )
 
-count = 1
 memberModel = viewNS.model('회원정보', {
-    'user_num': fields.Integer(description='유저 고유 번호', required=True, example="3")
+    'user_num': fields.Integer(description='유저 고유 번호', required=True, example="1")
 })
 
 memeber_info_nested = viewNS.model(
@@ -30,24 +29,45 @@ member_info = viewNS.model(
     },
 )
 
+member_edit = viewNS.model(
+    '회원 정보 수정',
+    {
+        'user_num': fields.Integer(description='아이디', required=True),
+        'pw': fields.String(description='비밀번호'),
+        'email': fields.String(description='이메일')
+    }
+)
+
 authModel = viewNS.model('인증', {
     'id': fields.String(description='아이디', required=True, example="test"),
     'password': fields.String(description='비밀번호', required=True, example="test")
 })
+
+password_model = viewNS.model('비밀번호 찾기', {
+    'id': fields.String(description='아이디', required=True, example="test"),
+    'email': fields.String(description='아이디', required=True, example="test@test.com"),
+    'pw': fields.String(description='새로운 비밀번호', required=True, example="test"),
+    }
+)
+
 @viewNS.route('/member')
 class Member(Resource):
+    # @jwt_required
     @viewNS.expect(memberModel)
     def get(self):
         """회원 정보 조회"""
-        userNum = request.get['user_num'].json()
-        MemberController.show_member_info(userNum)
+        # userNum = request.json['user_num']        
+        # return MemberController.show_member_info(userNum)
+        pass
     
+    # @jwt_required
     @viewNS.expect(memberModel)
     def delete(self):
         """회원 탈퇴"""
-        userNum = request.get['user_num'].json()
-        userToken = request.get['user_token'].json()
-        MemberController.discard_info(userNum, userToken)
+        userNum = request.json['user_num']
+        # userToken = request.json['access_token']
+        member_con_object = MemberController()
+        member_con_object.discard_info(userNum)
         return { 'user_num' : userNum, 'result' : 'success' }
 
     @viewNS.expect(viewNS.model('회원 가입', member_info))
@@ -57,28 +77,32 @@ class Member(Resource):
         print(array)
         member_con_object = MemberController()
         MemberController.join_memeber(member_con_object, array)
-        return { 'id' : array['id'] , 'pw' : array }
+        return { 'data' : array }
 
-    @viewNS.expect(viewNS.inherit('회원 정보 수정', memberModel, {'array': fields.String(description='Json 형식의 정보 추가 항목 배열')}))
+    # @jwt_required
+    @viewNS.expect(member_edit)
     def patch(self):
         """회원 정보 수정"""
         userNum = request.json['user_num']
-        # print(type(request.json))
-        # print(userNum)
-
-        array = request.json['array']
-        MemberController.edit_info(userNum, array)
-        return { 'user_num' : userNum, 'data' : array }
+        pw = request.json['pw']
+        email = request.json['email']
+        
+        member_con_object = MemberController()
+        MemberController.edit_info(member_con_object, userNum, pw, email)
+        return { 'user_num' : userNum, 'pw': pw, 'email': email }
 
 
 @viewNS.route('/auth')
 class Auth(Resource):
-    # def get(self):              
-    #     """회원 정보 조회"""
-    #     array = request.form['info_array']
-    #     test = MemberController.join_memeber(array)
-    #     print(test)
-    #     return { 'test' : test }
+    @viewNS.expect('비밀번호 찾기',password_model)
+    def post(self):              
+        """비밀번호 찾기"""
+        user_id = request.json['id']
+        user_email = request.json['email']        
+        new_password = request.json['pw']
+        member_con_object = MemberController()
+        result = member_con_object.find_password(user_id, user_email, new_password)
+        return { 'result' : result }
 
     @viewNS.expect(authModel)
     def patch(self):
@@ -91,7 +115,7 @@ class Auth(Resource):
         # @staticmethod 추가
         # result = MemberController.login(user_array['id'], user_array['password'])
 
-        # # vsy
+        # # vs
         
         # memObj = MemberController()
         # result = MemberController.login(memObj ,user_array['id'], user_array['password'])
@@ -106,7 +130,7 @@ class Auth(Resource):
         if result == None:
             return { 'result' : 'failed', 'reason' : 'mismatched member info ' }
         else:
-            return { 'result' : 'success', 'access_token' : result['access_token'], 'refresh_token' : result['refresh_token'] }
+            return { 'result' : 'success', 'access_token' : result[0], 'refresh_token' : result[1] }
 
     # @app.route('/join')
     # def join():
