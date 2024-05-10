@@ -1,12 +1,10 @@
 import time
 
 from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app import db
 
-from flask import jsonify
-from flask_jwt_extended import create_access_token, create_refresh_token
-
-from sqlalchemy.orm import Mapped, mapped_column
 
 class MemberModel(db.Model):
     __tablename__ = 'member'
@@ -17,3 +15,4 @@ class MemberModel(db.Model):
     permit: Mapped[int] = mapped_column(nullable=False, default=0)
     create_at: Mapped[int] = mapped_column(nullable=False, default=time.time())
     update_at: Mapped[int] = mapped_column(nullable=True)
+    

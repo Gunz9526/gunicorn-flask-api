@@ -1,5 +1,5 @@
-from flask import jsonify, request
-from flask_restx import Resource, Namespace, Api, fields
+from flask import request
+from flask_restx import Resource, Namespace, fields
 from flask_jwt_extended import jwt_required
 
 from controller.con_member import Member as MemberController
@@ -52,23 +52,15 @@ password_model = viewNS.model('비밀번호 찾기', {
 
 @viewNS.route('/member')
 class Member(Resource):
-    # @jwt_required
-    @viewNS.expect(memberModel)
-    def get(self):
-        """회원 정보 조회"""
-        # userNum = request.json['user_num']        
-        # return MemberController.show_member_info(userNum)
-        pass
-    
-    # @jwt_required
+    @jwt_required
     @viewNS.expect(memberModel)
     def delete(self):
         """회원 탈퇴"""
-        userNum = request.json['user_num']
+        user_num = request.json['user_num']
         # userToken = request.json['access_token']
         member_con_object = MemberController()
-        member_con_object.discard_info(userNum)
-        return { 'user_num' : userNum, 'result' : 'success' }
+        member_con_object.discard_info(user_num)
+        return { 'user_num' : user_num, 'result' : 'success' }
 
     @viewNS.expect(viewNS.model('회원 가입', member_info))
     def post(self):
@@ -79,26 +71,25 @@ class Member(Resource):
         MemberController.join_memeber(member_con_object, array)
         return { 'data' : array }
 
-    # @jwt_required
+    @jwt_required
     @viewNS.expect(member_edit)
     def patch(self):
         """회원 정보 수정"""
-        userNum = request.json['user_num']
+        user_num = request.json['user_num']
         pw = request.json['pw']
         email = request.json['email']
-        
         member_con_object = MemberController()
-        MemberController.edit_info(member_con_object, userNum, pw, email)
-        return { 'user_num' : userNum, 'pw': pw, 'email': email }
+        MemberController.edit_info(member_con_object, user_num, pw, email)
+        return { 'user_num' : user_num, 'pw': pw, 'email': email }
 
 
 @viewNS.route('/auth')
 class Auth(Resource):
     @viewNS.expect('비밀번호 찾기',password_model)
-    def post(self):              
+    def post(self):
         """비밀번호 찾기"""
         user_id = request.json['id']
-        user_email = request.json['email']        
+        user_email = request.json['email']
         new_password = request.json['pw']
         member_con_object = MemberController()
         result = member_con_object.find_password(user_id, user_email, new_password)
@@ -109,43 +100,23 @@ class Auth(Resource):
         """로그인"""
         user_id = request.json['id']
         password = request.json['password']
-        
-
-        ##########
+        ###############################################################################################
         # @staticmethod 추가
         # result = MemberController.login(user_array['id'], user_array['password'])
-
+        #
         # # vs
-        
+        #
         # memObj = MemberController()
         # result = MemberController.login(memObj ,user_array['id'], user_array['password'])
-
+        #
         # # vs
-
-        Memberobj = MemberController()
-        result = Memberobj.login(user_id, password)
-
-        ##########
+        #
+        member_obj = MemberController()
+        result = member_obj.member_login(user_id, password)
+        #############################################################################################
         #print(result)
-        if result == None:
+        if result is None:
             return { 'result' : 'failed', 'reason' : 'mismatched member info ' }
         else:
             return { 'result' : 'success', 'access_token' : result[0], 'refresh_token' : result[1] }
-
-    # @app.route('/join')
-    # def join():
-    #     return 'join_member'
-
-    # @app.route('/findpw')
-    # def findpw():
-    #     return 'find_member_password'
-
-    # @app.route('/edit')
-    # @jwt_required(refresh=True)
-    # def editinfo():
-    #     return 'edit_member_info'
-
-    # @app.route('/discard')
-    # @jwt_required(refresh=True)
-    # def discard():
-    #     return 'discard_member_info'
+        
