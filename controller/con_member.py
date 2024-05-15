@@ -4,7 +4,7 @@ from app import db, mybcrypt
 from model.model_member import MemberModel
 
 
-class Member:
+class MemberController:
     def __init__(self):
         pass
 
@@ -17,7 +17,7 @@ class Member:
         # print(password, hashed_password)
         result = db.session.execute(db.select(MemberModel).filter_by(id=user_id)).scalars().first()
         if result is not None:
-            verify = mybcrypt.check_password_hash(result.pw, password)
+            verify = mybcrypt.check_password_hash(result.password, password)
             if verify is True:
                 return self.create_token(user_id)
             else:
@@ -27,8 +27,8 @@ class Member:
             return result
 
     def join_memeber(self, array):
-        hashed_password = mybcrypt.generate_password_hash(array['pw']).decode('utf-8')
-        info = MemberModel(id = array['id'], pw = hashed_password, email = array['email'])
+        hashed_password = mybcrypt.generate_password_hash(array['password']).decode('utf-8')
+        info = MemberModel(id = array['id'], password = hashed_password, email = array['email'])
         db.session.add(info)
         db.session.commit()
 
@@ -37,7 +37,7 @@ class Member:
         result = result.scalars().first()
         if result is not None:
             hashed_password = mybcrypt.generate_password_hash(password).decode('utf-8')
-            result.pw = hashed_password
+            result.password = hashed_password
             db.session.commit()
             return 'True'
         else:
@@ -46,7 +46,7 @@ class Member:
     def edit_info(self, user_num, password, email):
         hashed_password = mybcrypt.generate_password_hash(password).decode('utf-8')
         result = db.session.execute(db.select(MemberModel).filter_by(user_num=user_num)).first()
-        result.pw = hashed_password
+        result.password = hashed_password
         result.email = email
         result.verified = True
         db.session.commit()

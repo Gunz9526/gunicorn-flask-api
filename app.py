@@ -10,7 +10,7 @@ from config import JWT_SECRET_KEY, db_file
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY['SECRET_KEY']
-mybcrypt = Bcrypt(app)
+mybcrypt = Bcrypt(app)  
 db = SQLAlchemy()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
@@ -21,9 +21,10 @@ db.init_app(app)
 app.app_context().push()
 
 
+from view.view_member import viewNS
+
 jwtmanager = JWTManager(app)
 
-from view.view_member import viewNS
 
 authorizations = {'bearer_auth': {
     'type': 'apiKey',
