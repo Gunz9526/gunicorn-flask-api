@@ -2,18 +2,18 @@ from flask import request
 from flask_restx import Resource, Namespace, fields
 from flask_jwt_extended import jwt_required
 
-from controller.con_member import MemberController
+from controller.controller_member import MemberController
 
-viewNS = Namespace(
-    name = 'View',
-    description='각 기능의 엔드포인트',
+member_namespace = Namespace(
+    name = 'MemberView',
+    description='회원 기능의 엔드포인트',
     )
 
-memberModel = viewNS.model('회원정보', {
+memberModel = member_namespace.model('회원정보', {
         'user_num': fields.Integer(description='유저 고유 번호', required=True, example="1")
     })
 
-memeber_info_nested = viewNS.model(
+memeber_info_nested = member_namespace.model(
     "array_nested",
     {
         'id': fields.String(required=True, description='ID', default='test'),
@@ -22,14 +22,14 @@ memeber_info_nested = viewNS.model(
     },
 )
 
-member_info = viewNS.model(
+member_info = member_namespace.model(
     "array",
     {
         "array": fields.Nested(memeber_info_nested),
     },
 )
 
-member_edit = viewNS.model(
+member_edit = member_namespace.model(
     '회원 정보 수정',
     {
         'user_num': fields.Integer(description='아이디', required=True),
@@ -38,22 +38,22 @@ member_edit = viewNS.model(
     }
 )
 
-authModel = viewNS.model('인증', {
+authModel = member_namespace.model('인증', {
     'id': fields.String(description='아이디', required=True, example="test"),
     'password': fields.String(description='비밀번호', required=True, example="test")
 })
 
-password_model = viewNS.model('비밀번호 찾기', {
+password_model = member_namespace.model('비밀번호 찾기', {
     'id': fields.String(description='아이디', required=True, example="test"),
     'email': fields.String(description='아이디', required=True, example="test@test.com"),
     'password': fields.String(description='새로운 비밀번호', required=True, example="test"),
     }
 )
 
-@viewNS.route('/member/delete')
+@member_namespace.route('/member/delete')
 class MemberDelete(Resource):
     @jwt_required
-    @viewNS.expect(memberModel)
+    @member_namespace.expect(memberModel)
     def delete(self):
         """회원 탈퇴"""
         user_num = request.json['user_num']
@@ -63,9 +63,9 @@ class MemberDelete(Resource):
         return { 'user_num' : user_num, 'result' : 'success' }
 
 
-@viewNS.route('/member/join')
+@member_namespace.route('/member/join')
 class MemberJoin(Resource):
-    @viewNS.expect(viewNS.model('회원 가입', member_info))
+    @member_namespace.expect(member_namespace.model('회원 가입', member_info))
     def post(self):
         """회원가입"""
         array = request.json['array']
@@ -73,12 +73,12 @@ class MemberJoin(Resource):
         member_con_object = MemberController()
         MemberController.join_memeber(member_con_object, array)
         return { 'data' : array }
-    
 
-@viewNS.route('/member/edit')
+
+@member_namespace.route('/member/edit')
 class MemberEdit(Resource):
     @jwt_required
-    @viewNS.expect(member_edit)
+    @member_namespace.expect(member_edit)
     def patch(self):
         """회원 정보 수정"""
         user_num = request.json['user_num']
@@ -89,9 +89,9 @@ class MemberEdit(Resource):
         return { 'user_num' : user_num, 'password': password, 'email': email }
 
 
-@viewNS.route('/auth/find')
+@member_namespace.route('/auth/find')
 class AuthFind(Resource):
-    @viewNS.expect('비밀번호 찾기',password_model)
+    @member_namespace.expect('비밀번호 찾기',password_model)
     def post(self):
         """비밀번호 찾기"""
         user_id = request.json['id']
@@ -102,9 +102,9 @@ class AuthFind(Resource):
         return { 'result' : result }
 
 
-@viewNS.route('/auth/login')
+@member_namespace.route('/auth/login')
 class AuthLogin(Resource):
-    @viewNS.expect(authModel)
+    @member_namespace.expect(authModel)
     def post(self):
         """로그인"""
         user_id = request.json['id']

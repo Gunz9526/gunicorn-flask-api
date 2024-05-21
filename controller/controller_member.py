@@ -5,9 +5,6 @@ from model.model_member import MemberModel
 
 
 class MemberController:
-    def __init__(self):
-        pass
-
     def create_token(self, user_id):
         access_token = create_access_token(identity=user_id)
         refresh_token = create_refresh_token(identity=user_id)
@@ -56,3 +53,9 @@ class MemberController:
         discard = discard.scalars().first()
         db.session.delete(discard)
         db.session.commit()
+
+    def select_user_permit(self, id):
+        result = db.session.execute(db.select(MemberModel).filter_by(id=id))
+        result = result.scalars().first()
+        if result is not None:
+            return result.permit

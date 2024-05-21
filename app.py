@@ -21,7 +21,10 @@ db.init_app(app)
 app.app_context().push()
 
 
-from view.view_member import viewNS
+from view.view_member import member_namespace
+from view.view_board import board_namespace
+from view.view_comment import comment_namespace
+from view.view_combined import combined_namespace
 
 jwtmanager = JWTManager(app)
 
@@ -41,7 +44,10 @@ api = Api(
     security='bearer_auth',
     doc="/api-docs")
 
-api.add_namespace(viewNS, '/view')
+api.add_namespace(member_namespace, '/view_member')
+api.add_namespace(board_namespace, '/view_board')
+api.add_namespace(comment_namespace, '/comment')
+api.add_namespace(combined_namespace,'/combined')
 
 # from view.view_member import *
 

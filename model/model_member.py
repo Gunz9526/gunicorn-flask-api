@@ -14,5 +14,4 @@ class MemberModel(db.Model):
     email: Mapped[str] = mapped_column(String(200),nullable=False)
     permit: Mapped[int] = mapped_column(nullable=False, default=0)
     create_at: Mapped[int] = mapped_column(nullable=False, default=time.time())
-    update_at: Mapped[int] = mapped_column(nullable=True)
-    
+    update_at: Mapped[int] = mapped_column(nullable=True)    
