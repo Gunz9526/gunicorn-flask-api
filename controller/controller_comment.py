@@ -17,5 +17,4 @@ class CommentController:
 
     def insert_nested_comment(self, comment_num, content, id):
         pass
-
         

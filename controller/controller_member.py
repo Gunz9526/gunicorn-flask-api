@@ -59,3 +59,18 @@ class MemberController:
         result = result.scalars().first()
         if result is not None:
             return result.permit
+
+
+    # type : 
+    #        1 -> board, 2 -> comment
+def owner_check(user_id, types, target_num):
+    if types == 1:
+        from model.model_board import BoardModel
+        result = db.session.execute(db.select(BoardModel).filter_by(board_num=target_num)).first()
+    elif types == 2:
+        from model.model_comment import CommentModel
+        result = db.session.execute(db.select(CommentModel).filter_by(comment_num=target_num)).first()
+    if result.writer == user_id:
+        return True
+    else:
+        return False
