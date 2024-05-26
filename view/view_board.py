@@ -29,37 +29,40 @@ class BoardSelect(Resource):
         # result = [array.title for array in get_board]
         for objects in get_board:
             result.append([objects.board_num, objects.title, objects.writer, objects.regdate])
-        print(result)
         return result
 
 @board_namespace.route('/select_content/<int:board_num>')
 class ContentSelect(Resource):
     def get(self, board_num):
         result = board_controller_object.select_content(board_num)
-        # 여기 작업중
-        return result
+        if result is not None:
+            return {'board_num': result.board_num, 'title': result.title, 'content': result.content, 'regdate': result.regdate, 'writer': result.writer}
+        else:
+            return {'result': 'failed', 'reason': 'board_num does not exist'}
 
 @board_namespace.route('/update_content')
 class ContentUpdate(Resource):
+    @board_namespace.expect(board_namespace.model('글 수정',{'content_num': fields.Integer(description='글 번호', example='1'), 'user_id': fields.String(descripttion="유저 아이디", example='test0'), 'title': fields.String(description="제목", example='제목변경'), 'content': fields.String(description="본문", example='본문변경')}))
     def patch(self):
         content_num = request.json['content_num']
         writer = request.json['user_id']
         content = request.json['content']
         title = request.json['title']
-        result = board_controller_object.update_content(content_num, title, content, writer)
+        result = board_controller_object.update_content(content_num, writer, title, content)
         if result is not None:
-            return result
+            return {'num': result.board_num, 'writer': result.writer, 'title': result.title, 'content': result.content}
         else:
-            return {'result': 'failed'}
+            return {'result': 'failed', 'reason': 'not authorized'}
 
 @board_namespace.route('/delete_content')
 class ContentDelete(Resource):
+    @board_namespace.expect(board_namespace.model('글 삭제', {'content_num': fields.Integer(description="글 번호"), 'user_id': fields.String(descripttion="유저 아이디")}))
     def delete(self):
         content_num = request.json['content_num']
         writer = request.json['user_id']
         result = board_controller_object.delete_content(content_num, writer)
-        if result is not None:
-            return result
+        if result is True:
+            return {'result': 'success'}
         else:
             return {'result': 'failed'}
 

@@ -1,6 +1,5 @@
 from app import db
 from model.model_board import BoardModel
-from controller.controller_member import owner_check
 
 class BoardController:
     def get_board(self, board_type, access_token=None):
@@ -15,25 +14,48 @@ class BoardController:
 
     def select_content(self, board_num):
         result = db.session.execute(db.select(BoardModel).filter_by(board_num=board_num)).scalars().first()
+        
         return result
 
-    def update_content(self, user_id, board_num, title=None, content=None, access_token=None):
-        if owner_check(user_id, 1, board_num):
-            result =  db.session.execute(db.select(BoardModel).filter_by(board_num=board_num)).first()
-            if title is not None:
-                result.title = title
-            if content is not None:
-                result.content = content
-
-            db.session.commit()
-            return True
+    def update_content(self, board_num, user_id, title=None, content=None, access_token=None):
+        # if owner_check(user_id, 1, board_num):
+        #     result =  db.session.execute(db.select(BoardModel).filter_by(board_num=board_num)).first()
+        #     if title is not None:
+        #         result.title = title
+        #     if content is not None:
+        #         result.content = content
+        #     db.session.commit()
+        #     return True
+        # else:
+        #     return None
         
+        result =  db.session.execute(db.select(BoardModel).filter_by(board_num=board_num)).scalar()
+        if result is not None:
+            if result.writer == user_id:
+                if title is not None:
+                    result.title = title
+                if content is not None:
+                    result.content = content
+                db.session.commit()
+                return result
+            else:
+                print("여기")
+                return False
         else:
-            return None
+            print("저기")
+            return False
 
-    def delete_content(self, user_id, board_num, access_token):
-        if owner_check(user_id, 1, board_num):
-            result = db.session.execute(db.select(BoardModel).filter_by(board_num=board_num)).first()
-            db.session.delete(result)
-            db.session.commit()
-            return True
+    def delete_content(self, board_num, user_id, access_token=None):
+        try:
+            result =  db.session.execute(db.select(BoardModel).filter_by(board_num=board_num)).scalar_one()        
+            if result is not None:
+                if result.writer == user_id:
+                    db.session.delete(result)
+                    db.session.commit()
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        except:
+            return False
