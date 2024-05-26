@@ -44,11 +44,13 @@ class CommentUpdate(Resource):
 
 @comment_namespace.route('/delete_comment')
 class CommentDelete(Resource):
+    @comment_namespace.expect(comment_namespace.model('댓글 삭제',{'comment_num': fields.Integer(description='지울 댓글 번호', example='8'), 'user_id': fields.String(descripttion="유저 아이디", example='test0')}))
     def delete(self):
         comment_num = request.json['comment_num']
         user_id = request.json['user_id']
         result = comment_controller_object.delete_comment(comment_num, user_id)
         if result is not None:
+            comment_controller_object.delete_nested_comment(result.comment_num)
             return {'result': 'success', 'comment_num': comment_num}
         else:
             return {'result': 'failed', 'reason': 'unauthorized request'}
