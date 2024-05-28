@@ -34,6 +34,7 @@ class CommentInsert(Resource):
 
 @comment_namespace.route('/update_comment')
 class CommentUpdate(Resource):
+    @comment_namespace.expect(comment_namespace.model('댓글 수정',{'comment_num': fields.Integer(description='수정 댓글 번호', example='8'), 'user_id': fields.String(descripttion="유저 아이디", example='test0'), 'content': fields.String(description='수정 댓글 내용',example='수정 테스트')}))
     def patch(self):
         comment_num = request.json['comment_num']
         content = request.json['content']
