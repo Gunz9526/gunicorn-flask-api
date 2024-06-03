@@ -1,0 +1,151 @@
+<html>
+<head>
+    <title>로그인</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css')}}">    
+    
+</head>
+<body>
+    <section class="user">
+        <div class="user_options-container">
+          <div class="user_options-text">
+            <div class="user_options-unregistered">
+              <h2 class="user_unregistered-title">Don't have an account?</h2>
+              <p class="user_unregistered-text">Just register to join my simple REST API</p>
+              <button class="user_unregistered-signup" id="signup-button">Sign up</button>
+            </div>
+      
+            <div class="user_options-registered">
+              <h2 class="user_registered-title">Have an account?</h2>
+              <p class="user_registered-text">Then, just login REST API, that doesn't have to verify your identification. I try to get used to make wsgi server.
+              <button class="user_registered-login" id="login-button">Login</button>
+            </div>
+          </div>
+          
+          <div class="user_options-forms" id="user_options-forms">
+            <div class="user_forms-login">
+              <h2 class="forms_title">Login</h2>
+              <form class="forms_form">
+                <fieldset class="forms_fieldset">
+                  <div class="forms_field">
+                    <input type="ID" placeholder="ID" class="forms_field-input" id="loginid" required autofocus />
+                  </div>
+                  <div class="forms_field">
+                    <input type="password" placeholder="Password" class="forms_field-input" id="loginpw" required />
+                  </div>
+                </fieldset>
+                <div class="forms_buttons">
+                  <button type="button" class="forms_buttons-forgot">Forgot password?</button>
+                  <input type="button" value="Log In" class="forms_buttons-action" id="login-button-action" onclick="login_btn_click">
+                </div>
+               
+              </form>
+              <script>
+                $("#login-button-action").click(login_btn_click); 
+                function login_btn_click(){
+                  var id = $('#loginid').val();
+                  var pw = $('#loginpw').val();
+                  var data = {
+                    "id" : id, 
+                    "password" : pw
+                  }
+                  console.log(id + ' / '  + pw);
+                  $.ajax({
+                    url: 'http://3.34.133.41:5000/view_member/auth/login',
+                    type: 'post',              
+                    dataType : 'json',      
+                    contentType: 'application/json',
+                    data : JSON.stringify(data),
+                    headers : {
+                            "Content-Type" : "application/json",
+                    },                   
+                    success: function (data, status, xhr) {
+                        if(data['result']=='success') {
+                          console.log(JSON.stringify(data))
+                          console.log("Access Token = " + data['access_token'])
+                          console.log("Refresh Token = " + data['refresh_token'])
+                          window.location.href = '/board_list?board_num=0'
+                          sessionStorage.setItem("user_id", data['user_id'])
+                          sessionStorage.setItem("access_token", data['access_token'])
+                          sessionStorage.setItem("permit", data['permit'])
+                          sessionStorage.setItem("user_num", data['user_num'])
+                        }
+                        else {
+                          alert('로그인 실패')
+                        }
+                        
+                    },
+                    error: function (data, status, err) {                      
+                      console.log("data : " + JSON.stringify(data));
+                      alert(data)
+                    },
+                    complete: function () {
+                    }                    
+                });
+              }
+            </script>
+            </div>
+            <div class="user_forms-signup">
+              <h2 class="forms_title">Sign Up</h2>
+              <form class="forms_form" method="POST">
+                <fieldset class="forms_fieldset">
+                  <div class="forms_field">
+                    <input type="text" placeholder="ID" class="forms_field-input" id='signupid' required />
+                  </div>
+                  <div class="forms_field">
+                    <input type="email" placeholder="Email" class="forms_field-input" id='signupemail' required />
+                  </div>
+                  <div class="forms_field">
+                    <input type="password" placeholder="Password" class="forms_field-input" id='signuppw' required />
+                  </div>
+                </fieldset>
+                <div class="forms_buttons">
+                  <input type="button" value="Sign up" class="forms_buttons-action" id="signupbtnclick" onclick="sign_up_button">
+                </div>
+              </form>
+              <script>
+                $('#signupbtnclick').click(sign_up_button);
+                function sign_up_button(){
+                  var id = $('#signupid').val();
+                  var email = $('#signupemail').val();
+                  var pw = $('#signuppw').val();
+
+                  var data = {
+                    "array" : {
+                      "id" : id,
+                      "password" : pw,
+                      "email" : email,
+                    }
+                  }
+                  $.ajax({
+                    url: 'http://3.34.133.41:5000/view_member/member/join',
+                    type: 'post',              
+                    dataType : 'json',      
+                    contentType: 'application/json',
+                    data : JSON.stringify(data),
+                    headers : {
+                            "Content-Type" : "application/json",
+                    },                   
+                    success: function (data, status, xhr) {                        
+                        console.log("id = " + data['data']['id'])
+                        console.log("pw = " + data['data']['password'])
+                        console.log("email = " + data['data']['email'])                        
+                    },
+                    error: function (data, status, err) {                      
+                      console.log("data : " + JSON.stringify(data));
+                      alert(data)
+                    },
+                    complete: function () {
+                    }                    
+                });
+                }
+              </script>
+            </div>
+          </div>
+        </div>
+      </section>
+</body>
+
+<script src="{{ url_for('static', filename='js/login.js')}}"></script>
+</html>

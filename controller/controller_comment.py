@@ -24,11 +24,11 @@ class CommentController:
         return True
 
     def update_comment(self, comment_num, content, user_id):
-        result = db.session.execute(db.select(CommentModel).fitler_by(comment_num=comment_num)).scalar_one()
+        result = db.session.execute(db.select(CommentModel).filter_by(comment_num=comment_num)).scalar_one()
         if result is not None:
             if result.writer == user_id:
                 result.content = content
-                result.commit()
+                db.session.commit()
                 return {'result': 'success', 'value': content}
             else:
                 return None
@@ -48,7 +48,7 @@ class CommentController:
             return None
         
     def delete_nested_comment(self, nested):
-        result = db.session.execute(db.select(CommentModel).filter_by(nested=nested)).scalars().fetchall()
+        result = db.session.execute(db.select(CommentModel).filter_by(nested=nested)).scalars()
         db.session.delete(result)
         db.session.commit()
 

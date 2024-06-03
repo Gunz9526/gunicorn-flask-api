@@ -1,17 +1,19 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
 
+from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_restx import Api
 from flask_sqlalchemy import  SQLAlchemy
 
 from config import JWT_SECRET_KEY, db_file
 
-
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY['SECRET_KEY']
-mybcrypt = Bcrypt(app)  
+mybcrypt = Bcrypt(app)
+CORS(app,resource={r'*':{'origins':'*'}})
 db = SQLAlchemy()
+jwt = JWTManager(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True

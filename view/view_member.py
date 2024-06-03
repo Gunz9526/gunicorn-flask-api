@@ -9,9 +9,10 @@ member_namespace = Namespace(
     description='회원 기능의 엔드포인트',
     )
 
-memberModel = member_namespace.model('회원정보', {
+member_model = member_namespace.model('회원정보', {
         'user_num': fields.Integer(description='유저 고유 번호', required=True, example="1")
-    })
+    }
+)
 
 memeber_info_nested = member_namespace.model(
     "array_nested",
@@ -29,19 +30,18 @@ member_info = member_namespace.model(
     },
 )
 
-member_edit = member_namespace.model(
-    '회원 정보 수정',
-    {
+member_edit = member_namespace.model('회원 정보 수정', {
         'user_num': fields.Integer(description='아이디', required=True),
-        'password': fields.String(description='비밀번호'),
-        'email': fields.String(description='이메일')
+        'password': fields.String(description='비밀번호', example='test'),
+        'email': fields.String(description='이메일', example='test3@test3.com'),
     }
 )
 
 authModel = member_namespace.model('인증', {
-    'id': fields.String(description='아이디', required=True, example="test"),
-    'password': fields.String(description='비밀번호', required=True, example="test")
-})
+        'id': fields.String(description='아이디', required=True, example="test"),
+        'password': fields.String(description='비밀번호', required=True, example="test")
+    }
+)
 
 password_model = member_namespace.model('비밀번호 찾기', {
     'id': fields.String(description='아이디', required=True, example="test"),
@@ -50,20 +50,7 @@ password_model = member_namespace.model('비밀번호 찾기', {
     }
 )
 
-@member_namespace.route('/member/delete')
-class MemberDelete(Resource):
-    @jwt_required
-    @member_namespace.expect(memberModel)
-    def delete(self):
-        """회원 탈퇴"""
-        user_num = request.json['user_num']
-        # userToken = request.json['access_token']
-        member_con_object = MemberController()
-        member_con_object.discard_info(user_num)
-        return { 'user_num' : user_num, 'result' : 'success' }
-
-
-@member_namespace.route('/member/join')
+@member_namespace.route('/member/join', methods=['POST'])
 class MemberJoin(Resource):
     @member_namespace.expect(member_namespace.model('회원 가입', member_info))
     def post(self):
@@ -75,10 +62,10 @@ class MemberJoin(Resource):
         return { 'data' : array }
 
 
-@member_namespace.route('/member/edit')
+@member_namespace.route('/member/edit', methods=['PATCH'])
 class MemberEdit(Resource):
-    @jwt_required
-    @member_namespace.expect(member_edit)
+    @member_namespace.expect(member_namespace.model('회원 정보 수정', member_edit))
+    @jwt_required()
     def patch(self):
         """회원 정보 수정"""
         user_num = request.json['user_num']
@@ -87,10 +74,25 @@ class MemberEdit(Resource):
         member_con_object = MemberController()
         MemberController.edit_info(member_con_object, user_num, password, email)
         return { 'user_num' : user_num, 'password': password, 'email': email }
+    
+
+@member_namespace.route('/member/delete', methods=['DELETE'])
+class MemberDelete(Resource):
+    @member_namespace.expect(member_namespace.model('회원 탈퇴',member_model))
+    @jwt_required()
+    def delete(self):
+        """회원 탈퇴"""
+        user_num = request.json['user_num']
+        # userToken = request.json['access_token']
+        member_con_object = MemberController()
+        member_con_object.discard_info(user_num)
+        return { 'user_num' : user_num, 'result' : 'success' }
 
 
-@member_namespace.route('/auth/find')
+
+@member_namespace.route('/auth/find', methods=['POST'])
 class AuthFind(Resource):
+    @jwt_required()
     @member_namespace.expect('비밀번호 찾기',password_model)
     def post(self):
         """비밀번호 찾기"""
@@ -102,7 +104,7 @@ class AuthFind(Resource):
         return { 'result' : result }
 
 
-@member_namespace.route('/auth/login')
+@member_namespace.route('/auth/login', methods=['POST'])
 class AuthLogin(Resource):
     @member_namespace.expect(authModel)
     def post(self):
@@ -127,5 +129,5 @@ class AuthLogin(Resource):
         if result is None:
             return { 'result' : 'failed', 'reason' : 'mismatched member info ' }
         else:
-            return { 'result' : 'success', 'access_token' : result[0], 'refresh_token' : result[1] }
+            return { 'result' : 'success', 'access_token' : result['access_token'], 'refresh_token' : result['refresh_token'], 'permit': result['permit'], 'user_id': result['user_id'] , 'user_num': result['user_num']}
         

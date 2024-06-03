@@ -16,10 +16,11 @@ content_model = board_namespace.model('글 작성', {
     'user_id': fields.String(description='아이디', required=True, example="test0"),
     'title': fields.String(description='제목', required=True, example="제목"),
     'content': fields.String(description='내용', required=True, example="내용"),
+    'board_type': fields.Integer(description='게시판 종류', required=True, example=0, default=0),
     }
 )
 
-@board_namespace.route('/select_board/<int:board_type>')
+@board_namespace.route('/select_board/<int:board_type>', methods=['GET'])
 class BoardSelect(Resource):
     # @board_namespace.expect()
     def get(self, board_type):
@@ -31,16 +32,16 @@ class BoardSelect(Resource):
             result.append([objects.board_num, objects.title, objects.writer, objects.regdate])
         return result
 
-@board_namespace.route('/select_content/<int:board_num>')
+@board_namespace.route('/select_content/<int:board_num>', methods=['GET'])
 class ContentSelect(Resource):
     def get(self, board_num):
         result = board_controller_object.select_content(board_num)
         if result is not None:
-            return {'board_num': result.board_num, 'title': result.title, 'content': result.content, 'regdate': result.regdate, 'writer': result.writer}
+            return {'board_num': result.board_num, 'title': result.title, 'content': result.content, 'regdate': result.regdate, 'writer': result.writer, 'board_type': result.board_type}
         else:
             return {'result': 'failed', 'reason': 'board_num does not exist'}
 
-@board_namespace.route('/update_content')
+@board_namespace.route('/update_content', methods=['PATCH'])
 class ContentUpdate(Resource):
     @board_namespace.expect(board_namespace.model('글 수정',{'content_num': fields.Integer(description='글 번호', example='1'), 'user_id': fields.String(descripttion="유저 아이디", example='test0'), 'title': fields.String(description="제목", example='제목변경'), 'content': fields.String(description="본문", example='본문변경')}))
     def patch(self):
@@ -54,7 +55,7 @@ class ContentUpdate(Resource):
         else:
             return {'result': 'failed', 'reason': 'not authorized'}
 
-@board_namespace.route('/delete_content')
+@board_namespace.route('/delete_content', methods=['DELETE'])
 class ContentDelete(Resource):
     @board_namespace.expect(board_namespace.model('글 삭제', {'content_num': fields.Integer(description="글 번호"), 'user_id': fields.String(descripttion="유저 아이디")}))
     def delete(self):
@@ -66,14 +67,15 @@ class ContentDelete(Resource):
         else:
             return {'result': 'failed'}
 
-@board_namespace.route('/insert_content')
+@board_namespace.route('/insert_content', methods=['POST'])
 class ContentInsert(Resource):
     @board_namespace.expect(content_model)
     def post(self):
         title = request.json['title']
         content = request.json['content']
         writer = request.json['user_id']
-        result = board_controller_object.insert_content(title, content, writer)
+        board_type = request.json['board_type']
+        result = board_controller_object.insert_content(title, content, writer, board_type)
         if result is not None:
             return result
         else:

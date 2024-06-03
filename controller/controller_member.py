@@ -8,7 +8,7 @@ class MemberController:
     def create_token(self, user_id):
         access_token = create_access_token(identity=user_id)
         refresh_token = create_refresh_token(identity=user_id)
-        return (access_token, refresh_token)
+        return ( access_token, refresh_token )
 
     def member_login(self, user_id, password):
         # print(password, hashed_password)
@@ -16,7 +16,8 @@ class MemberController:
         if result is not None:
             verify = mybcrypt.check_password_hash(result.password, password)
             if verify is True:
-                return self.create_token(user_id)
+                value =  self.create_token(user_id)
+                return {'permit': result.permit, 'access_token': value[0], 'refresh_token': value[1], 'user_id': result.id, 'user_num': result.user_num}
             else:
                 result = None
                 return result
@@ -42,10 +43,9 @@ class MemberController:
 
     def edit_info(self, user_num, password, email):
         hashed_password = mybcrypt.generate_password_hash(password).decode('utf-8')
-        result = db.session.execute(db.select(MemberModel).filter_by(user_num=user_num)).first()
+        result = db.session.execute(db.select(MemberModel).filter_by(user_num=user_num)).scalar()
         result.password = hashed_password
         result.email = email
-        result.verified = True
         db.session.commit()
 
     def discard_info(self, user_num):
@@ -61,8 +61,8 @@ class MemberController:
             return result.permit
 
 
-    # type : 
-    #        1 -> board, 2 -> comment
+#     # type : 
+#            1 -> board, 2 -> comment
 # def owner_check(user_id, types, target_num):
 #     print(user_id, target_num)
 #     if types == 1:
