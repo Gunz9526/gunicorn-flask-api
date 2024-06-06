@@ -29,7 +29,7 @@ class BoardSelect(Resource):
         # 한번에 list에 넣어서 출력할 방법은 없나? Map을 써도 된다
         # result = [array.title for array in get_board]
         for objects in get_board:
-            result.append([objects.board_num, objects.title, objects.writer, objects.regdate])
+            result.append([objects.board_num, objects.title, objects.user_id, objects.regdate])
         return result
 
 @board_namespace.route('/select_content/<int:board_num>', methods=['GET'])
@@ -37,7 +37,7 @@ class ContentSelect(Resource):
     def get(self, board_num):
         result = board_controller_object.select_content(board_num)
         if result is not None:
-            return {'board_num': result.board_num, 'title': result.title, 'content': result.content, 'regdate': result.regdate, 'writer': result.writer, 'board_type': result.board_type}
+            return {'board_num': result.board_num, 'title': result.title, 'content': result.content, 'regdate': result.regdate, 'user_id': result.user_id, 'board_type': result.board_type}
         else:
             return {'result': 'failed', 'reason': 'board_num does not exist'}
 
@@ -46,12 +46,12 @@ class ContentUpdate(Resource):
     @board_namespace.expect(board_namespace.model('글 수정',{'content_num': fields.Integer(description='글 번호', example='1'), 'user_id': fields.String(descripttion="유저 아이디", example='test0'), 'title': fields.String(description="제목", example='제목변경'), 'content': fields.String(description="본문", example='본문변경')}))
     def patch(self):
         content_num = request.json['content_num']
-        writer = request.json['user_id']
+        user_id = request.json['user_id']
         content = request.json['content']
         title = request.json['title']
-        result = board_controller_object.update_content(content_num, writer, title, content)
+        result = board_controller_object.update_content(content_num, user_id, title, content)
         if result is not None:
-            return {'num': result.board_num, 'writer': result.writer, 'title': result.title, 'content': result.content}
+            return {'num': result.board_num, 'user_id': result.user_id, 'title': result.title, 'content': result.content}
         else:
             return {'result': 'failed', 'reason': 'not authorized'}
 
@@ -60,8 +60,8 @@ class ContentDelete(Resource):
     @board_namespace.expect(board_namespace.model('글 삭제', {'content_num': fields.Integer(description="글 번호"), 'user_id': fields.String(descripttion="유저 아이디")}))
     def delete(self):
         content_num = request.json['content_num']
-        writer = request.json['user_id']
-        result = board_controller_object.delete_content(content_num, writer)
+        user_id = request.json['user_id']
+        result = board_controller_object.delete_content(content_num, user_id)
         if result is True:
             return {'result': 'success'}
         else:
@@ -73,9 +73,9 @@ class ContentInsert(Resource):
     def post(self):
         title = request.json['title']
         content = request.json['content']
-        writer = request.json['user_id']
+        user_id = request.json['user_id']
         board_type = request.json['board_type']
-        result = board_controller_object.insert_content(title, content, writer, board_type)
+        result = board_controller_object.insert_content(title, content, user_id, board_type)
         if result is not None:
             return result
         else:

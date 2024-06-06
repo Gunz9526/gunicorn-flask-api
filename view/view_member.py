@@ -83,7 +83,6 @@ class MemberDelete(Resource):
     def delete(self):
         """회원 탈퇴"""
         user_num = request.json['user_num']
-        # userToken = request.json['access_token']
         member_con_object = MemberController()
         member_con_object.discard_info(user_num)
         return { 'user_num' : user_num, 'result' : 'success' }
@@ -111,23 +110,11 @@ class AuthLogin(Resource):
         """로그인"""
         user_id = request.json['id']
         password = request.json['password']
-        ###############################################################################################
-        # @staticmethod 추가
-        # result = MemberController.login(user_array['id'], user_array['password'])
-        #
-        # # vs
-        #
-        # memObj = MemberController()
-        # result = MemberController.login(memObj ,user_array['id'], user_array['password'])
-        #
-        # # vs
-        #
         member_obj = MemberController()
         result = member_obj.member_login(user_id, password)
-        #############################################################################################
-        #print(result)
         if result is None:
             return { 'result' : 'failed', 'reason' : 'mismatched member info ' }
         else:
             return { 'result' : 'success', 'access_token' : result['access_token'], 'refresh_token' : result['refresh_token'], 'permit': result['permit'], 'user_id': result['user_id'] , 'user_num': result['user_num']}
+        
         

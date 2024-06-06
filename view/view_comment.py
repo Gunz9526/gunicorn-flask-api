@@ -19,7 +19,7 @@ class CommentSelect(Resource):
         comment_count= len(comment_value)
         for i in range(comment_count):
             nested_array = comment_controller_object.select_nested_comment(comment_value[i].comment_num)
-            result[i] = {'comment_num': comment_value[i].comment_num, 'content': comment_value[i].content, 'writer': comment_value[i].writer, 'regdate': comment_value[i].regdate, 'nested': nested_array, 'board_num': comment_value[i].board_num}
+            result[i] = {'comment_num': comment_value[i].comment_num, 'content': comment_value[i].content, 'user_id': comment_value[i].user_id, 'regdate': comment_value[i].regdate, 'nested': nested_array, 'board_num': comment_value[i].board_num}
         return result
 
 @comment_namespace.route('/insert_comment', methods=['POST'])

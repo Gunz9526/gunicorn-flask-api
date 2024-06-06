@@ -54,31 +54,8 @@ class MemberController:
         db.session.delete(discard)
         db.session.commit()
 
-    def select_user_permit(self, id):
-        result = db.session.execute(db.select(MemberModel).filter_by(id=id))
+    def select_user_permit(self, user_id):
+        result = db.session.execute(db.select(MemberModel).filter_by(id=user_id))
         result = result.scalars().first()
         if result is not None:
             return result.permit
-
-
-#     # type : 
-#            1 -> board, 2 -> comment
-# def owner_check(user_id, types, target_num):
-#     print(user_id, target_num)
-#     if types == 1:
-#         from model.model_board import BoardModel
-#         result = db.session.execute(db.select(BoardModel).filter_by(board_num=target_num)).first()
-#     elif types == 2:
-#         from model.model_comment import CommentModel
-#         result = db.session.execute(db.select(CommentModel).filter_by(comment_num=target_num)).first()
-
-#     # print("uid" + str(user_id) + "result" + str(result.writer))
-#     if result is not None:
-#         if result.writer == user_id:
-#             return True
-#         else:
-#             print("1번")
-#             return False
-#     else:
-#         print("2번")
-#         return None
