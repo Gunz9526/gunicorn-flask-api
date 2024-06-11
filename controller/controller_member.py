@@ -11,7 +11,6 @@ class MemberController:
         return ( access_token, refresh_token )
 
     def member_login(self, user_id, password):
-        # print(password, hashed_password)
         result = db.session.execute(db.select(MemberModel).filter_by(id=user_id)).scalars().first()
         if result is not None:
             verify = mybcrypt.check_password_hash(result.password, password)

@@ -22,12 +22,9 @@ content_model = board_namespace.model('글 작성', {
 
 @board_namespace.route('/select_board/<int:board_type>', methods=['GET'])
 class BoardSelect(Resource):
-    # @board_namespace.expect()
     def get(self, board_type):
         result = list()
         get_board = board_controller_object.get_board(board_type)
-        # 한번에 list에 넣어서 출력할 방법은 없나? Map을 써도 된다
-        # result = [array.title for array in get_board]
         for objects in get_board:
             result.append([objects.board_num, objects.title, objects.user_id, objects.regdate])
         return result

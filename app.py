@@ -26,7 +26,6 @@ app.app_context().push()
 from view.view_member import member_namespace
 from view.view_board import board_namespace
 from view.view_comment import comment_namespace
-from view.view_combined import combined_namespace
 
 jwtmanager = JWTManager(app)
 
@@ -49,9 +48,7 @@ api = Api(
 api.add_namespace(member_namespace, '/view_member')
 api.add_namespace(board_namespace, '/view_board')
 api.add_namespace(comment_namespace, '/comment')
-api.add_namespace(combined_namespace,'/combined')
 
-# from view.view_member import *
 
 if __name__ == '__main__':
     app.run(debug=True)
